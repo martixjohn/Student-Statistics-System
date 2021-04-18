@@ -250,8 +250,8 @@ void fgetALine(char *buf,int num,FILE *fp);//fgets除去\n
 long fp_st_ttitleTurnToPos(FILE *fp,const char * dst);//从头开始，每次使用复位指针位置 
 long fp_st_ctitleTurnToPos(FILE *fp,const char * dst,long posT);//每次从posT位置开始， 
 void PrtS(const char * text);
-#define TEXT_LINE 20
-#define TEXT_LINE_C 100
+#define TEXT_LINE 30
+#define TEXT_LINE_C 300
 
 int charToInt(char c);
 char intToChar(int i);

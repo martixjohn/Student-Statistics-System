@@ -68,7 +68,7 @@ long nodeToFile(file_type filetype){//前提：链表，来源：输入、备份
 	FILE* fp=NULL;
 	long num=0L;
 	Data *Nhead=headOfNode;
-	if(Nhead==NULL) return 0L;//没有数据
+	if(Nhead==NULL){fp=fopen(URL,"w+");fclose(fp);}//没有数据
 	switch(filetype){
 		case FILE_DATA:fp=fopen(URL,"w+");break;
 		case FILE_DATA_BAK:fp=fopen(URL_BAK,"w+");break;
@@ -550,15 +550,16 @@ int validID(const char *id){
 	return INVALID;
 } 
 int validSc(const char *score){
-	int count=1;
+	int count=0;
 	int dot=0;
 	while(*score){
 		//数字及.外 
+		count++;//表示第几位 
 		if((*score>'9'||*score<'0')&&*score!='.') return INVALID;
 		//小数点位置不能在第一位，最后一位 
 		if(count==1&&*score=='.') return INVALID;
 		if(*score=='.') dot=count;
-		count++;
+		
 		score++;
 	}
 
@@ -566,13 +567,11 @@ int validSc(const char *score){
 	//小数点不在4位及之后及最后一位之前3位之前
 		if(dot>4||count-1-dot>2) return INVALID;
 	//最后一位不为. 
-		if(*(--score)=='.') return INVALID; 
-	}else{//无小数点 
-		if(count-1>4) return INVALID;
+		if(dot==count) return INVALID; 
 	}
 
-	if(count>7) return INVALID;
-	return VALID;
+	if(count>6) return INVALID;
+	return VALID; 
 }
 Data* findStu(char stunum[11],int list_or_no){//返回指针位置 
 	Data *phead=headOfNode;
@@ -650,10 +649,10 @@ int deleteNode(){
 			PrtS("**确认完全删除?(Y/N)**");
 			scanf("%c",&buf);fflush(stdin);
 			if(buf=='Y'||buf=='y'){
-				while(temp){
-					temp1 = temp->next;
-					free(temp);
-					temp = temp1;
+				while(p){
+					temp1 = p->next;
+					free(p);
+					p = temp1;
 				}
 				printf("已完全删除!");
 				headOfNode=NULL;
@@ -675,7 +674,7 @@ void TST_prtNode(Data *phead){
 		phead=phead->next;
 	}
 }
-//打印对话框，要求每行不超过100字符，以\n分行 最多20行
+//打印对话框，要求每行不超过TEXT_LINE_C字符，以\n分行 最多TEXT_LINE行
 void PrtS(const char * text){
 	
 	int textnum[TEXT_LINE]={0};//每行字符个数
@@ -706,6 +705,7 @@ void PrtS(const char * text){
 		printf("*");
 	} 
 	printf("\n");
+	//CONTENT
 	for(i=0;i<textline;i++){
 		printf("*");
 		for(j=0;j<(maxlength*2-textnum[i]-2)/2;j++){
@@ -715,8 +715,7 @@ void PrtS(const char * text){
 		for(j=0;j<(maxlength*2-textnum[i]-2)/2;j++){
 			printf("-");
 		}
-		printf("*\n");
-		
+		printf("*\n");	
 	}
 	for(i=0;i<maxlength*2;i++){
 		printf("*");
@@ -785,13 +784,14 @@ int addOne(Data *input){//input必须是已创建好的空间
 		printf("输入无效数据！停止录入...");
 		return FAIL;
 	}
+	
 	if((temp=findStu(input->num,LIST_DONT))!=NULL)//找到相同 
 	{
 		printf("是否继续修改?(Y/N)");
 		printf(">>");
 		scanf("%c",&buf);fflush(stdin);
 		if(buf!='Y'&&buf!='y'){
-			printf("未修改任何内容！\n");
+			printf("未修改该生内容\n");
 		}else{
 			editOne(temp);
 		}
@@ -834,7 +834,7 @@ int Menu() {
     st_fileToNode();//读取设置文件，自动判定错误 
 	
 	 
-    PrtS("学生数据统计程序\n1.录入学生数据\n2.读取学生数据\n3.统计程序\n4关于帮助\n5.备份与恢复\n6.设置\n7.退出程序\n");
+    PrtS("学生数据统计程序\n1.录入学生数据\n2.读取学生数据\n3.统计程序\n4.关于帮助\n5.备份与恢复\n6.设置\n7.退出程序\n");
     printf(">>");scanf("%d",&console);
     fflush(stdin); 
     Choose(console);
@@ -915,8 +915,22 @@ void outputDataUI() {
     
 }
 void aboutUI(){
+	char text[1000]={'\0'};
+	strCmb(2,text,"\n**帮助**");
+	strCmb(2,text,"\n1.相关文件路径：                                            ");
+	strCmb(2,text,"\n  程序数据库文件目录:"URL);
+	strCmb(2,text,"\n数据库备份文件:"URL_BAK);
+	strCmb(2,text,"\n设置文件:"URL_S);
+	strCmb(2,text,"\n统计汇总数据：软件根目录\n");
+	strCmb(2,text,"\n2.设置、查看分数标准：设置->设置或查看分数标准              ");
+	strCmb(2,text,"\n3.设置、查看科目名称：设置->自定义科目名称                  ");  
+	strCmb(2,text,"\n2.设置查看数据时每页显示学生个数：设置->设置每页显示学生个数");
+	strCmb(2,text,"\n\n**NOTE**\n");
+	strCmb(2,text,"*1.当对数据库进行写入前会进行备份操作                       \n");
+	strCmb(2,text,"*2.数据库会进行自动排序                                     \n");
+	strCmb(2,text,"\n**关于**\n作者:Martix_CN");
 	system("cls");
-	PrtS("**帮助**\n程序数据库文件目录:data\\data.dat\n数据库备份文件:data\\data.bak\n设置文件:data\\data.bak\n当对数据库进行写入前会进行备份操作\n\n**关于**\n作者:Martix_CN");
+	PrtS(text);
 	if(getch()) Menu();
 }
 void backupUI(){
@@ -1225,11 +1239,12 @@ int saveData(int way){//录入信息至链表，方式自选
 			while(1){
 				
 				add=(Data *)malloc(sizeof(Data));
+				add->next = NULL;
 				if(addOne(add)==SUCCESS){
 					if(temp==NULL)
 						headOfNode=temp=add;
 					
-					add->next = NULL;
+					
 					temp->next = add;//上一个节点temp
 					temp = add;//移动节点至新建
 					
